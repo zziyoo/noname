@@ -2548,9 +2548,9 @@ const skills = {
 		intro: {
 			name: "霆",
 			content: "当前拥有#个“霆”标记",
-		markcount(storage, player) {
-			return player.countMark("tingwei");
-		},
+			markcount(storage) {
+				return storage;
+			},
 		},
 		subSkill: {
 			fengyin: {
@@ -32680,18 +32680,21 @@ const skills = {
 				const beishuiDesc = isSource ? "删除受到伤害时的效果" : "删除造成伤害时的效果";
 				choiceList.push("背水！" + beishuiDesc + "，升级技能");
 			}
-			choices.push("取消");
+			choices.push("cancel2");
 			const { control } = await player
-				.chooseControl(choices)
-				.set("choiceList", choiceList)
-				.set("prompt", promptText)
-				.set("ai", () => {
-					if (canDiscard) return 0;
-					return 1;
+				.chooseControl({
+					controls: choices,
+					choiceList: choiceList,
+					prompt: promptText,
+					ai() {
+						if (get.event().canDiscard) return 0;
+						return 1;
+					},
 				})
+				.set("canDiscard", canDiscard)
 				.forResult();
 			event.result = {
-				bool: control !== "取消",
+				bool: control !== "cancel2",
 				cost_data: control,
 			};
 		},
@@ -32710,7 +32713,14 @@ const skills = {
 			const isBeishui = control === "背水";
 			if (isOption1 || isBeishui) {
 				if (canDiscard) {
-					const result = await player.chooseCard("he", true, "请选择一张" + (isSource ? "黑色" : "红色") + "牌弃置", card => get.color(card) === color).forResult();
+					const result = await player.chooseCard({
+						position: "he",
+						forced: true,
+						prompt: "请选择一张" + (isSource ? "黑色" : "红色") + "牌弃置",
+						filterCard(card) {
+							return get.color(card) === color;
+						},
+					}).forResult();
 					if (result.bool && result.cards?.length > 0) {
 						await player.discard(result.cards);
 						if (isSource) {
@@ -32728,7 +32738,7 @@ const skills = {
 				const colorCards = pileCards.filter(card => get.color(card) === color);
 				const toGain = colorCards.slice(0, effectNum);
 				if (toGain.length > 0) {
-					await player.gain(toGain, "gain2");
+					await player.gain(toGain, "draw2");
 					game.log(player, "发动了【竭缘】，获得了" + effectNum + "张" + (isSource ? "黑色" : "红色") + "牌");
 				}
 			}
@@ -32775,18 +32785,23 @@ const skills = {
 				choices.push("交换身份牌");
 				choiceList.push("与其交换身份牌");
 			}
-			choices.push("取消");
-			const result = await player.chooseControl(choices)
-				.set("choiceList", choiceList)
-				.set("prompt", get.prompt("mbfenxin", target))
-				.set("ai", () => {
-					if (validSkills.length > 0) return 0;
-					if (canSwap) return 1;
-					return "取消";
-				})
+			choices.push("cancel2");
+			const result = await player.chooseControl({
+				controls: choices,
+				choiceList: choiceList,
+				prompt: get.prompt("mbfenxin", target),
+				ai() {
+					const evt = get.event();
+					if (evt.validSkills.length > 0) return 0;
+					if (evt.canSwap) return 1;
+					return "cancel2";
+				},
+			})
+				.set("validSkills", validSkills)
+				.set("canSwap", canSwap)
 				.forResult();
 			event.result = {
-				bool: result.control !== "取消",
+				bool: result.control !== "cancel2",
 				cost_data: result.control,
 				targets: [target],
 			};
@@ -32810,6 +32825,7 @@ const skills = {
 					});
 					if (validSkills.length > 0) {
 						await player.addSkills(validSkills);
+						game.log(player, "获得了", target, "的所有技能：", validSkills.map(s => `#g【${get.translation(s)}】`).join("、"));
 					}
 				} else {
 					game.log(player, "与", target, "身份相同，无法获得技能");
