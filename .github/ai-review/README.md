@@ -10,13 +10,29 @@ Name:
 
 `OPENAI_API_KEY`
 
-Optional repository variable:
+Value:
 
-`OPENAI_MODEL`
+`sk-...` (OpenAI API key, or any OpenAI-compatible provider key)
 
-Example:
+Optional repository variables:
 
-`gpt-5.5`
+| Variable | Default | Description |
+| --- | --- | --- |
+| `OPENAI_MODEL` | `gpt-5.5` | Model name, e.g. `deepseek-chat`, `deepseek-reasoner` |
+| `OPENAI_BASE_URL` | *(empty)* | Provider base URL, e.g. `https://api.deepseek.com` |
+| `OPENAI_SECRET_NAME` | `OPENAI_API_KEY` | Name of the secret that holds the API key |
+
+### DeepSeek example
+
+Secret: `OPENAI_API_KEY` = DeepSeek API key.
+
+Variables:
+
+- `OPENAI_MODEL` = `deepseek-chat`
+- `OPENAI_BASE_URL` = `https://api.deepseek.com`
+
+The reviewer script uses the Chat Completions API, so any
+OpenAI-compatible provider (OpenAI, DeepSeek, ...) works.
 
 ## Security model
 

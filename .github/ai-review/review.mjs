@@ -35,7 +35,10 @@ for (const file of relatedFiles) {
   }
 }
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL || undefined
+});
 
 const instructions = `
 You are a senior production software engineer performing a GitHub pull request review.
@@ -102,17 +105,33 @@ REVIEW RULES:
 ${CONFIG.reviewRules.map(x => `- ${x}`).join("\n")}
 `;
 
-const response = await client.responses.create({
+const response = await client.chat.completions.create({
   model: process.env.OPENAI_MODEL || "gpt-5.5",
-  instructions,
-  input
+  messages: [
+    { role: "system", content: instructions },
+    { role: "user", content: input }
+  ],
+  response_format: { type: "json_object" }
 });
 
-const text = response.output_text.trim();
+const text = (response.choices[0]?.message?.content || "").trim();
+
+function extractJson(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start === -1 || end <= start) {
+      throw new Error(`Model returned invalid JSON:\n${raw}`);
+    }
+    return JSON.parse(raw.slice(start, end + 1));
+  }
+}
 
 let review;
 try {
-  review = JSON.parse(text);
+  review = extractJson(text);
 } catch {
   throw new Error(`Model returned invalid JSON:\n${text}`);
 }
