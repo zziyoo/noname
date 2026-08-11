@@ -1235,6 +1235,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			const suffix = !player.storage[event.name] ? "yang" : "yin";
+			player.clearMark(`${event.name}_${suffix}`, false);
 			player.changeZhuanhuanji(event.name);
 			let isChengshi = false;
 			if (event.triggername == "useCardToTargeted") {
