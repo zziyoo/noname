@@ -55,3 +55,19 @@ Edit `review-config.json` to change:
 - ignored paths
 
 The AI does not automatically approve or merge PRs.
+
+## Manual review of PRs in other repositories
+
+The workflow also supports `workflow_dispatch`:
+
+`Actions -> AI PR Review -> Run workflow`
+
+Inputs:
+
+- `repo`: `owner/repo` of the PR (default `libnoname/noname`)
+- `pr_number`: PR number to review
+
+The result is printed in the run log and uploaded as the
+`ai-review-result` artifact. Comments are NOT posted on the
+target repository, because the workflow token only has
+permissions inside this repository.
