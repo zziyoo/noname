@@ -9,18 +9,28 @@ name: AI PR Review
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repository to review (owner/repo), e.g. libnoname/noname"
+        required: true
+        default: "libnoname/noname"
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: string
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: ai-pr-review-${{ github.event.pull_request.number }}
+  group: ai-pr-review-${{ github.event.pull_request.number || 'manual' }}
   cancel-in-progress: true
 
 jobs:
   review:
-    if: github.event.pull_request.draft == false
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -43,22 +53,24 @@ jobs:
       - name: Collect PR context
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+          TARGET_REPO: ${{ inputs.repo || github.repository }}
         run: |
           mkdir -p .ai-review
 
           gh pr view "$PR_NUMBER" \
+            --repo "$TARGET_REPO" \
             --json title,body,author,baseRefName,headRefName,commits,labels \
             > .ai-review/pr.json
 
           gh api \
             -H "Accept: application/vnd.github+json" \
-            "/repos/${{ github.repository }}/pulls/$PR_NUMBER/files?per_page=100" \
+            "/repos/$TARGET_REPO/pulls/$PR_NUMBER/files?per_page=100" \
             > .ai-review/files.json
 
           gh api \
             -H "Accept: application/vnd.github.diff" \
-            "/repos/${{ github.repository }}/pulls/$PR_NUMBER" \
+            "/repos/$TARGET_REPO/pulls/$PR_NUMBER" \
             > .ai-review/pr.diff
 
           find . -type f \
@@ -77,8 +89,20 @@ jobs:
         run: node .github/ai-review/review.mjs
 
       - name: Publish PR review
+        if: github.event_name == 'pull_request_target'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node .github/ai-review/publish.mjs
+
+      - name: Show review result (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: cat .ai-review/review.json
+
+      - name: Upload review result (manual)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-review-result
+          path: .ai-review/review.json
