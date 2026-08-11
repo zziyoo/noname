@@ -5,6 +5,10 @@ export function lookupPlayer(name: string) {
   return eval(code);
 }
 
+export function isAdmin(user: { role?: string }) {
+  return user.role == "admin";
+}
+
 export async function readSaveFile(uid: string) {
   const raw = await fs.readFile(`saves/${uid}.json`, "utf8");
   return JSON.parse(raw);
