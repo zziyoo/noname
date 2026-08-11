@@ -1,0 +1,83 @@
+name: AI PR Review
+
+# Security model:
+# - pull_request_target is used so secrets are available for fork PRs.
+# - We NEVER checkout or execute code from the PR head.
+# - We fetch only PR metadata/diff through GitHub's API.
+# - The reviewer code itself comes from the trusted base branch.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ai-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout trusted base revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install OpenAI SDK
+        working-directory: .github/ai-review
+        run: npm install --no-package-lock --ignore-scripts --no-audit --no-fund openai@^5
+
+      - name: Collect PR context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          mkdir -p .ai-review
+
+          gh pr view "$PR_NUMBER" \
+            --json title,body,author,baseRefName,headRefName,commits,labels \
+            > .ai-review/pr.json
+
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${{ github.repository }}/pulls/$PR_NUMBER/files?per_page=100" \
+            > .ai-review/files.json
+
+          gh api \
+            -H "Accept: application/vnd.github.diff" \
+            "/repos/${{ github.repository }}/pulls/$PR_NUMBER" \
+            > .ai-review/pr.diff
+
+          find . -type f \
+            -not -path './.git/*' \
+            -not -path './node_modules/*' \
+            -not -path './.ai-review/*' \
+            | sort \
+            | head -n 500 \
+            > .ai-review/repo-files.txt
+
+      - name: Run AI review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.5' }}
+        run: node .github/ai-review/review.mjs
+
+      - name: Publish PR review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/ai-review/publish.mjs

@@ -1,0 +1,15 @@
+{
+  "maxDiffChars": 120000,
+  "maxRelatedFiles": 12,
+  "maxRelatedFileChars": 18000,
+  "reviewRules": [
+    "Report only actionable engineering issues.",
+    "Do not report formatting, naming, or personal style unless it causes a real problem.",
+    "Do not invent requirements or repository behavior.",
+    "If evidence is insufficient, omit the finding.",
+    "Check changed behavior for missing tests and regressions.",
+    "Treat authentication, authorization, secrets, user input, file access, SQL, shell execution, SSRF, deserialization and dependency changes as security-sensitive.",
+    "Consider backwards compatibility and API/schema changes.",
+    "Avoid duplicate findings."
+  ]
+}
