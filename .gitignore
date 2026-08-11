@@ -3,6 +3,9 @@ output
 node_modules
 package-lock.json
 
+# AI review workspace
+.ai-review/
+
 # IDE
 .idea/
 .vscode/
