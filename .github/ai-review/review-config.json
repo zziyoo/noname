@@ -3,13 +3,24 @@
   "maxRelatedFiles": 12,
   "maxRelatedFileChars": 18000,
   "reviewRules": [
-    "Report only actionable engineering issues.",
-    "Do not report formatting, naming, or personal style unless it causes a real problem.",
-    "Do not invent requirements or repository behavior.",
-    "If evidence is insufficient, omit the finding.",
-    "Check changed behavior for missing tests and regressions.",
-    "Treat authentication, authorization, secrets, user input, file access, SQL, shell execution, SSRF, deserialization and dependency changes as security-sensitive.",
-    "Consider backwards compatibility and API/schema changes.",
-    "Avoid duplicate findings."
+    "只报告有代码级证据、能够明确复现，并且具有实际工程影响的问题。",
+    "优先级按：安全性 > 正确性 > 数据完整性 > 兼容性 > 性能 > 测试回归风险。",
+    "不要报告纯格式、命名、个人风格或重构偏好，除非它会导致实际功能、构建、工具链或维护问题。",
+    "不要臆造需求或预期行为；以仓库现有代码、测试、文档、调用关系和提交内容为依据。",
+    "无法确认问题是否真实存在时，不要报告；宁可遗漏，也不要基于猜测提出发现。",
+    "每个发现必须能够指出具体代码位置、触发条件、实际影响，并给出可执行的修复方向。",
+    "重点审查 PR 引入的行为变化，并检查其与调用方、事件时序、状态生命周期、异常路径及现有 API 的一致性。",
+    "重点检查条件判断、循环、reduce/filter/map、事件触发、异步流程、状态存储、计数、缓存和生命周期逻辑中的重复计算、错误作用域、错误事件对象和状态泄漏。",
+    "检查空值、边界值、重复调用、多目标、多对象、对象不存在、对象销毁/死亡以及异常路径。",
+    "对于行为变化，检查是否存在足以覆盖关键回归路径的测试；仅在缺少测试会造成现实回归风险时报告测试问题。",
+    "检查向后兼容性，包括 API、函数签名、返回值、数据结构、配置、序列化/存档格式和现有调用方式；只有存在实际破坏风险时报告。",
+    "将认证、授权、权限校验、密钥/凭据、用户输入、文件访问、SQL、shell/命令执行、SSRF、反序列化和依赖变更视为安全敏感项，并提高审查优先级。",
+    "对于安全敏感改动，检查输入可控性、校验绕过、权限扩大、数据泄露和非预期执行。",
+    "检查依赖变更是否可能造成 API 不兼容、行为回归、构建问题或供应链风险。",
+    "不要仅因实现方式与其他代码不同就报告问题；必须证明这种差异会造成实际影响。",
+    "同一根因导致的多个表现只报告一次，优先报告根因。",
+    "已经被 PR 后续提交修复的问题，不作为当前最终状态的问题报告。",
+    "每个发现只描述一个独立、可修复的问题。",
+    "按严重程度和实际影响排序；没有实际工程影响的内容不要输出。"
   ]
 }
