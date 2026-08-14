@@ -164,7 +164,9 @@ const validReview = {
   decision: findings.some(f => f.severity === "critical" || f.severity === "major")
     ? "REQUEST_CHANGES"
     : (findings.length ? "COMMENT" : "APPROVE"),
-  summary: review.summary || (findings.length ? "发现需要关注的问题。" : "未发现有充分证据的阻塞性问题。"),
+  summary: findings.length
+    ? (review.summary || "发现需要关注的问题。")
+    : "未发现有充分证据、且能定位到 PR 新增代码行的问题。",
   findings
 };
 
