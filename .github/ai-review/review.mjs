@@ -105,6 +105,10 @@ ${diff}
 
 仓库上下文：
 ${context}
+`;
+
+const systemPrompt = `
+${instructions}
 
 审查规则：
 ${CONFIG.reviewRules.map(x => `- ${x}`).join("\n")}
@@ -113,11 +117,16 @@ ${CONFIG.reviewRules.map(x => `- ${x}`).join("\n")}
 const response = await client.chat.completions.create({
   model: process.env.OPENAI_MODEL || "gpt-5.5",
   messages: [
-    { role: "system", content: instructions },
+    { role: "system", content: systemPrompt },
     { role: "user", content: input }
   ],
   response_format: { type: "json_object" }
 });
+
+const usage = response.usage;
+if (usage) {
+  console.error(`[usage] prompt=${usage.prompt_tokens} cache_hit=${usage.prompt_cache_hit_tokens ?? 0} cache_miss=${usage.prompt_cache_miss_tokens ?? 0} hit_rate=${(((usage.prompt_cache_hit_tokens ?? 0) / usage.prompt_tokens) * 100).toFixed(1)}%`);
+}
 
 const text = (response.choices[0]?.message?.content || "").trim();
 
