@@ -81,11 +81,29 @@ jobs:
             | head -n 500 \
             > .ai-review/repo-files.txt
 
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" \
+            --repo "$TARGET_REPO" \
+            --json headRefOid \
+            --jq .headRefOid)
+          echo "$HEAD_SHA" > .ai-review/head-sha.txt
+
+          mkdir -p .ai-review/head
+          jq -r '.[].filename' .ai-review/files.json | head -n 12 | while IFS= read -r f; do
+            case "$f" in
+              *.png|*.jpg|*.jpeg|*.gif|*.webp|*.bmp|*.mp3|*.m4a|*.wav|*.ogg|*.flac|*.mp4|*.webm|*.zip|*.woff|*.woff2|*.ttf|*.eot|*.svg|*.ico) continue ;;
+            esac
+            mkdir -p ".ai-review/head/$(dirname "$f")"
+            gh api -H "Accept: application/vnd.github.raw" \
+              "/repos/$TARGET_REPO/contents/$f?ref=$HEAD_SHA" \
+              > ".ai-review/head/$f" 2>/dev/null || true
+          done
+
       - name: Run AI review
         env:
           OPENAI_API_KEY: ${{ secrets[vars.OPENAI_SECRET_NAME || 'OPENAI_API_KEY'] }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.5' }}
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || '' }}
+          TARGET_REPO: ${{ inputs.repo || github.repository }}
         run: node .github/ai-review/review.mjs
 
       - name: Render review report

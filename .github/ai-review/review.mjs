@@ -44,6 +44,19 @@ for (const file of relatedFiles) {
   }
 }
 
+let changedContent = "";
+for (const file of changedFiles.slice(0, CONFIG.maxChangedFileContents)) {
+  try {
+    const content = await fs.readFile(path.join(DATA, "head", file), "utf8");
+    if (content.includes("\0")) continue;
+    changedContent += `\n\n===== 完整文件（PR 最新）：${file} =====\n${content.slice(0, CONFIG.maxChangedFileChars)}`;
+  } catch {
+    // 该文件未下载到本体快照，跳过。
+  }
+}
+
+const targetRepo = process.env.TARGET_REPO || "";
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: process.env.OPENAI_BASE_URL || undefined
@@ -106,11 +119,17 @@ ${pr.title || ""}
 PR 描述：
 ${pr.body || "(无)"}
 
+被审查仓库：
+${targetRepo || "(未知)"}
+
 变更文件：
 ${changedFiles.join("\n")}
 
 PR 差异：
 ${diff}
+
+变更文件完整内容（PR 最新状态）：
+${changedContent || "(未提供)"}
 
 仓库上下文：
 ${context}
