@@ -1,9 +1,13 @@
 {
   "maxDiffChars": 120000,
-  "maxRelatedFiles": 12,
-  "maxRelatedFileChars": 18000,
-  "maxChangedFileContents": 12,
-  "maxChangedFileChars": 15000,
+  "maxRelatedFiles": 8,
+  "maxRelatedFileChars": 16000,
+  "maxChangedFileContents": 8,
+  "maxChangedFileChars": 32000,
+  "maxEvidenceChars": 240000,
+  "maxFetchedFileChars": 200000,
+  "maxSiblingFilesPerChanged": 2,
+  "temperature": 0,
   "reviewRules": [
     "只报告有代码级证据、能够明确复现，并且具有实际工程影响的问题。",
     "优先级按：安全性 > 正确性 > 数据完整性 > 兼容性 > 性能 > 测试回归风险。",

@@ -4,6 +4,9 @@ import { execFileSync } from "node:child_process";
 const review = JSON.parse(
   await fs.readFile(".ai-review/review.json", "utf8")
 );
+const files = JSON.parse(
+  await fs.readFile(".ai-review/files.json", "utf8")
+);
 
 const repo = process.env.GITHUB_REPOSITORY;
 const prNumber = process.env.PR_NUMBER;
@@ -29,6 +32,28 @@ function ghApi(method, endpoint, body) {
 }
 
 const rank = { critical: 4, major: 3, minor: 2, suggestion: 1 };
+
+function changedLines(patch) {
+  const lines = new Set();
+  let right = null;
+  for (const line of String(patch || "").split("\n")) {
+    const hunk = line.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+    if (hunk) {
+      right = Number(hunk[1]);
+    } else if (right !== null && line.startsWith("+")) {
+      if (!line.startsWith("+++")) lines.add(right++);
+    } else if (right !== null && line.startsWith("-")) {
+      // Removed lines do not exist on the PR head and cannot receive RIGHT comments.
+    } else if (right !== null && !line.startsWith("\\")) {
+      right += 1;
+    }
+  }
+  return lines;
+}
+
+const changedLineMap = new Map(
+  files.map(file => [file.filename, changedLines(file.patch)])
+);
 
 const findings = [...review.findings]
   .filter(f => f?.path && f?.body)
@@ -60,7 +85,7 @@ ghApi(
 );
 
 const inline = findings
-  .filter(f => Number.isInteger(f.line) && f.line > 0)
+  .filter(f => Number.isInteger(f.line) && changedLineMap.get(f.path)?.has(f.line))
   .slice(0, 50)
   .map(f => ({
     path: f.path,

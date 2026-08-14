@@ -3,7 +3,7 @@ name: AI PR Review
 # Security model:
 # - pull_request_target is used so secrets are available for fork PRs.
 # - We NEVER checkout or execute code from the PR head.
-# - We fetch only PR metadata/diff through GitHub's API.
+# - We fetch PR metadata and source text through GitHub's API only.
 # - The reviewer code itself comes from the trusted base branch.
 
 on:
@@ -58,45 +58,27 @@ jobs:
         run: |
           mkdir -p .ai-review
 
-          gh pr view "$PR_NUMBER" \
-            --repo "$TARGET_REPO" \
-            --json title,body,author,baseRefName,headRefName,commits,labels \
-            > .ai-review/pr.json
-
           gh api \
             -H "Accept: application/vnd.github+json" \
-            "/repos/$TARGET_REPO/pulls/$PR_NUMBER/files?per_page=100" \
-            > .ai-review/files.json
+            "/repos/$TARGET_REPO/pulls/$PR_NUMBER" \
+            > .ai-review/pr.json
 
-          gh api \
+          gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$TARGET_REPO/pulls/$PR_NUMBER/files?per_page=100" \
+            | jq -s 'add' > .ai-review/files.json
+
+          if gh api \
             -H "Accept: application/vnd.github.diff" \
             "/repos/$TARGET_REPO/pulls/$PR_NUMBER" \
-            > .ai-review/pr.diff
+            > .ai-review/pr.diff; then
+            :
+          else
+            jq -r '.[] | select(.patch) | "diff --git a/\(.filename) b/\(.filename)\n\(.patch)"' \
+              .ai-review/files.json > .ai-review/pr.diff
+          fi
 
-          find . -type f \
-            -not -path './.git/*' \
-            -not -path './node_modules/*' \
-            -not -path './.ai-review/*' \
-            | sort \
-            | head -n 500 \
-            > .ai-review/repo-files.txt
-
-          HEAD_SHA=$(gh pr view "$PR_NUMBER" \
-            --repo "$TARGET_REPO" \
-            --json headRefOid \
-            --jq .headRefOid)
-          echo "$HEAD_SHA" > .ai-review/head-sha.txt
-
-          mkdir -p .ai-review/head
-          jq -r '.[].filename' .ai-review/files.json | head -n 12 | while IFS= read -r f; do
-            case "$f" in
-              *.png|*.jpg|*.jpeg|*.gif|*.webp|*.bmp|*.mp3|*.m4a|*.wav|*.ogg|*.flac|*.mp4|*.webm|*.zip|*.woff|*.woff2|*.ttf|*.eot|*.svg|*.ico) continue ;;
-            esac
-            mkdir -p ".ai-review/head/$(dirname "$f")"
-            gh api -H "Accept: application/vnd.github.raw" \
-              "/repos/$TARGET_REPO/contents/$f?ref=$HEAD_SHA" \
-              > ".ai-review/head/$f" 2>/dev/null || true
-          done
+          node .github/ai-review/collect-context.mjs
 
       - name: Run AI review
         env:
