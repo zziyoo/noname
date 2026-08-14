@@ -8,6 +8,15 @@ const CONFIG = JSON.parse(
   await fs.readFile(path.join(ROOT, ".github/ai-review/review-config.json"), "utf8")
 );
 
+let FEEDBACK = null;
+try {
+  FEEDBACK = JSON.parse(
+    await fs.readFile(path.join(ROOT, ".github/ai-review/feedback.json"), "utf8")
+  );
+} catch {
+  // 没有 feedback.json 时忽略，不阻塞审核。
+}
+
 const pr = JSON.parse(await fs.readFile(path.join(DATA, "pr.json"), "utf8"));
 const files = JSON.parse(await fs.readFile(path.join(DATA, "files.json"), "utf8"));
 const diff = (await fs.readFile(path.join(DATA, "pr.diff"), "utf8"))
@@ -107,11 +116,31 @@ ${diff}
 ${context}
 `;
 
+const avoidRules = (FEEDBACK && Array.isArray(FEEDBACK.avoidRules) && FEEDBACK.avoidRules.length)
+  ? `\n\n以下是从历史审核中沉淀的、不要再报告的问题类型（黑名单）：
+${FEEDBACK.avoidRules.map(x => `- ${x}`).join("\n")}`
+  : "";
+
+const fewShot = (FEEDBACK && FEEDBACK.goodExample && FEEDBACK.badExample)
+  ? `
+
+作为参考，下面是一个高质量发现示例（应当模仿这种证据充分、定位明确、给出可执行修复的写法）：
+
+${JSON.stringify(FEEDBACK.goodExample, null, 2)}
+
+下面是一个低质量发现示例（这种写法被认为没有价值，绝不应当这样报告）：
+
+${JSON.stringify(FEEDBACK.badExample, null, 2)}
+`
+  : "";
+
 const systemPrompt = `
 ${instructions}
 
 审查规则：
 ${CONFIG.reviewRules.map(x => `- ${x}`).join("\n")}
+${avoidRules}
+${fewShot}
 `;
 
 const response = await client.chat.completions.create({
