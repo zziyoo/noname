@@ -16,12 +16,10 @@ if (!token || !headRepo || !headSha) {
   throw new Error("Missing GitHub token, PR head repository, or PR head SHA.");
 }
 
-const binaryExtensions = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".ico", ".svg",
-  ".mp3", ".m4a", ".wav", ".ogg", ".flac", ".mp4", ".webm", ".zip",
-  ".woff", ".woff2", ".ttf", ".eot", ".pdf"
+const sourceExtensions = new Set([
+  ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".json", ".vue", ".svelte",
+  ".html", ".css", ".scss", ".less", ".yaml", ".yml", ".xml"
 ]);
-const sourceExtensions = new Set([".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".json"]);
 const sourceCache = new Map();
 
 function encodeRepoPath(file) {
@@ -30,10 +28,6 @@ function encodeRepoPath(file) {
 
 function isSourceFile(file) {
   return sourceExtensions.has(path.posix.extname(file).toLowerCase());
-}
-
-function isBinaryFile(file) {
-  return binaryExtensions.has(path.posix.extname(file).toLowerCase());
 }
 
 async function github(endpoint, accept = "application/vnd.github+json") {
@@ -55,7 +49,7 @@ async function github(endpoint, accept = "application/vnd.github+json") {
 
 async function fetchSource(file) {
   if (sourceCache.has(file)) return sourceCache.get(file);
-  if (!isSourceFile(file) || isBinaryFile(file)) {
+  if (!isSourceFile(file)) {
     sourceCache.set(file, null);
     return null;
   }
@@ -149,7 +143,7 @@ async function addRelated(file, reason) {
 }
 
 for (const file of changed) {
-  for (const candidate of extractRelativeImports(file.path, file.content)) {
+  for (const candidate of extractRelativeImports(file.path, file.content).slice(0, CONFIG.maxImportsPerChanged)) {
     if (related.length >= CONFIG.maxRelatedFiles) break;
     await addRelated(candidate, `由 ${file.path} 的相对 import/require 引用`);
   }

@@ -10,7 +10,12 @@ const CONFIG = JSON.parse(
 const pr = JSON.parse(await fs.readFile(path.join(DATA, "pr.json"), "utf8"));
 const files = JSON.parse(await fs.readFile(path.join(DATA, "files.json"), "utf8"));
 const snapshot = JSON.parse(await fs.readFile(path.join(DATA, "context.json"), "utf8"));
-const diff = (await fs.readFile(path.join(DATA, "pr.diff"), "utf8")).slice(0, CONFIG.maxDiffChars);
+const fullDiff = await fs.readFile(path.join(DATA, "pr.diff"), "utf8");
+const diff = fullDiff.slice(0, CONFIG.maxDiffChars);
+
+if (!snapshot.repository || !snapshot.headSha) {
+  throw new Error("Context snapshot is missing the PR head repository or SHA.");
+}
 
 let feedback = { avoidRules: [], goodExample: null, badExample: null };
 try {
@@ -39,10 +44,37 @@ function changedLines(patch) {
   return lines;
 }
 
+function changedLinesByPath(unifiedDiff) {
+  const result = new Map();
+  let file = null;
+  let right = null;
+  for (const line of String(unifiedDiff).split("\n")) {
+    const header = line.match(/^diff --git a\/(.+) b\/(.+)$/);
+    const hunk = line.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+    if (header) {
+      file = header[2];
+      if (!result.has(file)) result.set(file, new Set());
+      right = null;
+    } else if (hunk && file) {
+      right = Number(hunk[1]);
+    } else if (file && right !== null && line.startsWith("+")) {
+      if (!line.startsWith("+++")) result.get(file).add(right++);
+    } else if (file && right !== null && line.startsWith("-")) {
+      // Removed lines do not advance the PR head line number.
+    } else if (file && right !== null && !line.startsWith("\\")) {
+      right += 1;
+    }
+  }
+  return result;
+}
+
 const fileMeta = new Map(files.map(file => [file.filename, file]));
-const changedLineMap = new Map(
-  files.map(file => [file.filename, changedLines(file.patch)])
-);
+const diffLineMap = changedLinesByPath(fullDiff);
+const changedLineMap = new Map(files.map(file => {
+  const fromPatch = changedLines(file.patch);
+  const fromDiff = diffLineMap.get(file.filename) || new Set();
+  return [file.filename, new Set([...fromPatch, ...fromDiff])];
+}));
 
 function numberLines(content) {
   return content.split("\n").map((line, index) => `${index + 1}| ${line}`).join("\n");
@@ -55,10 +87,10 @@ function buildEvidence() {
 
   for (const file of [...snapshot.changed, ...snapshot.related]) {
     if (remaining <= 0) break;
-    const text = numberLines(file.content);
-    if (text.length > remaining) continue;
+    const text = numberLines(file.content).slice(0, remaining);
+    if (!text) continue;
     remaining -= text.length;
-    available.set(file.path, file.content.split("\n").length);
+    available.set(file.path, text.split("\n").length);
     selected.push(
       `===== ${file.path}${file.reason ? `（${file.reason}）` : ""}${file.truncated ? "（远端文件过大，内容不完整）" : ""} =====\n${text}`
     );
@@ -70,7 +102,7 @@ function buildEvidence() {
 const evidence = buildEvidence();
 const rules = CONFIG.reviewRules.map(rule => `- ${rule}`).join("\n");
 const avoidRules = Array.isArray(feedback.avoidRules) && feedback.avoidRules.length
-  ? `\n\n历史负反馈（不得报告）：\n${feedback.avoidRules.map(rule => `- ${rule}`).join("\n")}`
+  ? `\n\n历史负反馈（不得报告，最多取前 ${CONFIG.maxFeedbackRules} 条）：\n${feedback.avoidRules.slice(0, CONFIG.maxFeedbackRules).map(rule => `- ${rule}`).join("\n")}`
   : "";
 const examples = feedback.goodExample && feedback.badExample
   ? `\n\n高质量示例：\n${JSON.stringify(feedback.goodExample)}\n\n低质量示例（禁止模仿）：\n${JSON.stringify(feedback.badExample)}`
@@ -136,7 +168,9 @@ async function complete(user) {
   const usage = response.usage;
   if (usage) {
     const hit = usage.prompt_cache_hit_tokens ?? 0;
-    console.error(`[usage] prompt=${usage.prompt_tokens} cache_hit=${hit} cache_miss=${usage.prompt_cache_miss_tokens ?? 0} hit_rate=${((hit / usage.prompt_tokens) * 100).toFixed(1)}%`);
+    const promptTokens = usage.prompt_tokens || 0;
+    const rate = promptTokens ? ((hit / promptTokens) * 100).toFixed(1) : "0.0";
+    console.error(`[usage] prompt=${promptTokens} cache_hit=${hit} cache_miss=${usage.prompt_cache_miss_tokens ?? 0} hit_rate=${rate}%`);
   }
   return extractJson((response.choices[0]?.message?.content || "").trim());
 }

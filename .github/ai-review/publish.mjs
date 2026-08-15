@@ -7,6 +7,7 @@ const review = JSON.parse(
 const files = JSON.parse(
   await fs.readFile(".ai-review/files.json", "utf8")
 );
+const fullDiff = await fs.readFile(".ai-review/pr.diff", "utf8");
 
 const repo = process.env.GITHUB_REPOSITORY;
 const prNumber = process.env.PR_NUMBER;
@@ -51,11 +52,38 @@ function changedLines(patch) {
   return lines;
 }
 
-const changedLineMap = new Map(
-  files.map(file => [file.filename, changedLines(file.patch)])
-);
+function changedLinesByPath(unifiedDiff) {
+  const result = new Map();
+  let file = null;
+  let right = null;
+  for (const line of String(unifiedDiff).split("\n")) {
+    const header = line.match(/^diff --git a\/(.+) b\/(.+)$/);
+    const hunk = line.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+    if (header) {
+      file = header[2];
+      if (!result.has(file)) result.set(file, new Set());
+      right = null;
+    } else if (hunk && file) {
+      right = Number(hunk[1]);
+    } else if (file && right !== null && line.startsWith("+")) {
+      if (!line.startsWith("+++")) result.get(file).add(right++);
+    } else if (file && right !== null && line.startsWith("-")) {
+      // Removed lines do not exist on the PR head.
+    } else if (file && right !== null && !line.startsWith("\\")) {
+      right += 1;
+    }
+  }
+  return result;
+}
 
-const findings = [...review.findings]
+const diffLineMap = changedLinesByPath(fullDiff);
+const changedLineMap = new Map(files.map(file => {
+  const fromPatch = changedLines(file.patch);
+  const fromDiff = diffLineMap.get(file.filename) || new Set();
+  return [file.filename, new Set([...fromPatch, ...fromDiff])];
+}));
+
+const findings = [...(Array.isArray(review.findings) ? review.findings : [])]
   .filter(f => f?.path && f?.body)
   .sort((a, b) => (rank[b.severity] || 0) - (rank[a.severity] || 0));
 
