@@ -87,7 +87,7 @@ const dynamicTranslates = {
 		if (player.storage.twfengpo) {
 			return "当你使用【杀】或【决斗】指定唯一目标后，你可观看目标角色的手牌并选择一项：⒈摸X张牌。⒉令此牌的伤害值基数+X（X为其手牌中的红色牌数）。";
 		}
-		return "①当你使用【杀】或【决斗】指定唯一目标后，你可观看目标角色的手牌并选择一项：⒈摸X张牌。⒉令此牌的伤害值基数+X（X为其手牌中的♦数）。②当你杀死一名角色后，你将〖凤魄①〗中的“♦数”改为“红色牌数”。";
+		return `①当你使用【杀】或【决斗】指定唯一目标后，你可观看目标角色的手牌并选择一项：⒈摸X张牌。⒉令此牌的伤害值基数+X（X为其手牌中的♦数）。②当你杀死一名角色后，你将${get.poptip("twfengpo")}①中的“♦数”改为“红色牌数”。`;
 	},
 	twjiexun(player) {
 		return lib.translate[player.hasSkill("funan_jiexun") ? "twjiexunx_info" : "twjiexun_info"];
@@ -123,7 +123,7 @@ const dynamicTranslates = {
 			str += `\
 			②当你处于濒死状态时，其他角色不能对你使用【桃】。\
 			③使命：使用【决斗】或成为【决斗】目标的次数之和不小于4（若游戏总人数小于4则改为3）。\
-			④成功：准备阶段，若你于你的上回合完成了〖独往③〗的使命，则你重置〖独往〗并将〖独往〗修改至只保留〖独往①〗的效果，选择一项：⒈获得${get.poptip("twxiayong")}；⒉重置〖延势〗并令其获得历战效果。\
+			④成功：准备阶段，若你于你的上回合完成了${get.poptip("twduwang")}③的使命，则你重置${get.poptip("twduwang")}并将${get.poptip("twduwang")}修改至只保留${get.poptip("twduwang")}①的效果，选择一项：⒈获得${get.poptip("twxiayong")}；⒉重置${get.poptip("twylyanshi")}并令其获得历战效果。\
 			⑤失败：当你死亡时，使命失败。`;
 		}
 		return str;
