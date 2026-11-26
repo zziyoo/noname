@@ -46,7 +46,7 @@ const translates = {
 	huan_duocai_info: `出牌阶段，你可弃置4枚“漏洞”，获得一名其他角色的一个技能，其该技能失效，效果直至其下回合结束。当其他角色使用牌指定你为目标时，你可弃置1枚“漏洞”取消之。当你受到伤害后，你可视为对伤害来源发动一次${get.poptip("noname_gongchuang")}。`,
 	noname: "小无",
 	noname_zhuyuan: "祝愿",
-	noname_zhuyuan_info: `①每回合每名角色限一次。出牌阶段，你可以将四张花色各不相同的牌交给一名其他角色。你与其获得技能${get.poptip("noname_retieji")}和${get.poptip("noname_jiang")}至各自的回合结束。②锁定技，若你于当前回合内：未发动过〖祝愿〗，则你使用牌无次数限制；发动过〖祝愿〗，则你使用牌无距离限制。`,
+	noname_zhuyuan_info: `①每回合每名角色限一次。出牌阶段，你可以将四张花色各不相同的牌交给一名其他角色。你与其获得技能${get.poptip("retieji")}和${get.poptip("jiang")}至各自的回合结束。②锁定技，若你于当前回合内：未发动过〖祝愿〗，则你使用牌无次数限制；发动过〖祝愿〗，则你使用牌无距离限制。`,
 	noname_duocai: "多彩",
 	noname_duocai_info: "其他角色的牌进入弃牌堆后，你可以获得之。若你以此法得到的牌数：大于2，你弃置一名角色区域内的一张牌；等于2，你摸一张牌；小于2，你回复1点体力。",
 	ns_huangchengyan: "黄承彦",
