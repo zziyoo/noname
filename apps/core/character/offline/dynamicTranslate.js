@@ -106,7 +106,7 @@ const dynamicTranslates = {
 	peyuanjue(player) {
 		const bool = player.storage.peyuanjue;
 		let yang = "令所有角色的基本牌视为无次数限制的【杀】",
-			yin = "令所有角色与你互相计算距离为1，且你视为拥有〖同忾〗";
+			yin = `令所有角色与你互相计算距离为1，且你视为拥有${get.poptip("petongkai")}`;
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
