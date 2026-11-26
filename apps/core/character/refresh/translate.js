@@ -89,7 +89,7 @@ const translates = {
 	xinleiji_info: "①当你使用【闪】或【闪电】，或打出【闪】时，你可以进行判定。②当你的判定的判定牌生效后，若结果为：黑桃，你可对一名角色造成2点雷电伤害；梅花：你回复1点体力并可对一名角色造成1点雷电伤害。",
 	xinleiji_append: '<span style="font-family:yuanli">不能触发〖雷击〗的判定：〖暴虐〗、〖助祭〗、<br>〖弘仪〗、〖孤影〗。</span>',
 	xinleiji_faq: "不能触发〖雷击〗的判定",
-	xinleiji_faq_info: "<br>董卓/界董卓〖暴虐〗<br>黄巾雷使〖助祭〗<br>羊徽瑜〖弘仪〗<br>鸣濑白羽〖孤影〗",
+	xinleiji_faq_info: `<br>董卓${get.poptip("baonue")}/界董卓${get.poptip("olbaonue")}<br>黄巾雷使${get.poptip("fuji")}<br>羊徽瑜${get.poptip("hongyi")}<br>鸣濑白羽${get.poptip("shiroha_guying")}`,
 	xinguidao_info: "一名角色的判定牌生效前，你可以打出一张黑色牌作为判定牌并获得原判定牌。若你以此法打出的牌为黑桃2-9，则你摸一张牌。",
 	xinhuangtian: "黄天",
 	xinhuangtian2: "黄天",
