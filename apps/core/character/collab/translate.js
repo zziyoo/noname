@@ -230,7 +230,7 @@ const translates = {
 	dcqixin: "齐心",
 	dcqixin_info: `转换技。①出牌阶段，你可以将性别变更为：阳，曹节--女；阴，刘协--男。②当你即将死亡时，你取消之并将性别变更为${get.poptip("dcqixin")}①的转换状态，将体力调整至此状态的体力，然后你本局游戏不能发动${get.poptip("dcqixin")}。`,
 	dcqixin_faq: "关于齐心",
-	dcqixin_faq_info: "<br>〖齐心①〗的两种状态各拥有初始体力上限的体力值，初始状态为“刘协--男”，且两种状态的体力值分别计算。",
+	dcqixin_faq_info: `<br>${get.poptip("dcqixin")}①的两种状态各拥有初始体力上限的体力值，初始状态为“刘协--男”，且两种状态的体力值分别计算。`,
 	ol_jsrg_caocao: "汉曹操",
 	ol_jsrg_caocao_prefix: "汉",
 	oldingxi: "定西",
@@ -412,13 +412,13 @@ const translates = {
 	ol_le_liushan: "OL乐刘禅",
 	ol_le_liushan_prefix: "OL乐",
 	oltuoquan: "托权",
-	oltuoquan_info: `锁定技，游戏开始时，你令所有其他角色获得${get.poptip("oldianzan")}。准备阶段，你沉迷享乐，失去因〖托权〗获得的技能，然后从“${get.poptip({
+	oltuoquan_info: `锁定技，游戏开始时，你令所有其他角色获得${get.poptip("oldianzan")}。准备阶段，你沉迷享乐，失去因${get.poptip("oltuoquan")}获得的技能，然后从“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
 		type: "character",
 		info: "初始为关羽、张飞、赵云、黄忠、姜维、魏延、马谡、张翼。全部移去后获得蒋琬、费祎。",
 	})}”中选择两位上阵，获得这些武将牌上的所有技能（觉醒技、限定技除外）。`,
-	oltuoquan_info_doudizhu: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你沉迷享乐，失去因〖托权〗获得的技能，然后从“${get.poptip({
+	oltuoquan_info_doudizhu: `锁定技，游戏开始时，你令所有农民获得${get.poptip("oldianzan")}。准备阶段，你沉迷享乐，失去因${get.poptip("oltuoquan")}获得的技能，然后从“${get.poptip({
 		id: "tuoquan_fuchen",
 		name: "季汉辅臣",
 		type: "character",
