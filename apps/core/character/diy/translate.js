@@ -89,7 +89,7 @@ const translates = {
 	nslingying: "灵影",
 	nslingying_info: "锁定技，你使用【杀】无距离限制，且你使用【杀】的次数上限+1。",
 	nspojian: "破茧",
-	nspojian_info: `觉醒技，准备阶段，若你的"蝶舞"标记的数量不小于你的体力值，则你减1点体力上限并摸两张牌，删除〖蝶舞〗中使用【闪】的部分并获得技能${get.poptip("nsliegong")}。`,
+	nspojian_info: `觉醒技，准备阶段，若你的"蝶舞"标记的数量不小于你的体力值，则你减1点体力上限并摸两张牌，删除〖蝶舞〗中使用【闪】的部分并获得技能${get.poptip("xinliegong")}。`,
 	ns_sunyi: "孙翊",
 	nsguolie: "果烈",
 	nsguolie2: "果烈",
