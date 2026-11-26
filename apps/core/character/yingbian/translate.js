@@ -176,7 +176,7 @@ const translates = {
 	chongxin: "崇信",
 	chongxin_info: "出牌阶段限一次，你可重铸一张牌，且令一名有手牌的其他角色也重铸一张牌。",
 	dezhang: "德彰",
-	dezhang_info: "觉醒技。准备阶段，若你没有“绥”，则你减1点体力上限并获得〖卫戍〗。",
+	dezhang_info: `觉醒技。准备阶段，若你没有“绥”，则你减1点体力上限并获得${get.poptip("weishu")}。`,
 	weishu: "卫戍",
 	weishu_info: "锁定技。①当你于摸牌阶段外不因〖卫戍①〗而摸牌后，你令一名角色摸一张牌。②当你于弃牌阶段外不因〖卫戍②〗而弃置牌后，你弃置一名其他角色的一张牌。",
 	jin_jiachong: "晋贾充",
