@@ -1,3 +1,5 @@
+import { get } from "noname";
+
 const translates = {
 	caocao: "曹操",
 	hujia: "护驾",
@@ -139,7 +141,7 @@ const translates = {
 	zhongyi2: "忠义",
 	zhongyi_info: "限定技，出牌阶段，你可以将一张牌置于武将牌上。你的武将牌上有〖忠义〗牌时，己方角色使用【杀】造成的伤害+1。下轮游戏开始时，你将〖忠义〗牌置入弃牌堆。",
 	zhanshen: "战神",
-	zhanshen_info: "觉醒技，准备阶段，若场上有已死亡的其他己方角色且你已受伤，则你弃置装备区的武器牌，减1点体力上限，获得技能〖马术〗和〖神戟〗。",
+	zhanshen_info: `觉醒技，准备阶段，若场上有已死亡的其他己方角色且你已受伤，则你弃置装备区的武器牌，减1点体力上限，获得技能${get.poptip("mashu")}和${get.poptip("shenji")}。`,
 	shenji: "神戟",
 	shenji_info: "锁定技，你使用【杀】指定的目标数上限+2，次数上限+1。",
 	rewangzun: "妄尊",
