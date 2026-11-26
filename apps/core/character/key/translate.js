@@ -293,7 +293,7 @@ const translates = {
 	kyoko_juwu: "聚物",
 	kyoko_juwu_info: "你的回合外，当有装备牌进入弃牌堆后，若这些牌不是从你的区域移动的，则你可以获得这些牌。",
 	kyoko_zhengyi: "整遗",
-	kyoko_zhengyi_info: "锁定技，若你装备区的花色数：大于等于1，你视为拥有〖精策〗；大于等于2，你视为拥有〖涉猎〗：大于等于3，你视为拥有〖制衡〗；大于等于4，你将〖精策〗和〖制衡〗改为界限突破版本。",
+	kyoko_zhengyi_info: `锁定技，若你装备区的花色数：大于等于1，你视为拥有${get.poptip("jingce")}；大于等于2，你视为拥有${get.poptip("shelie")}：大于等于3，你视为拥有${get.poptip("zhiheng")}；大于等于4，你将${get.poptip("jingce")}和${get.poptip("zhiheng")}改为界限突破版本。`,
 	kyoko_jingce: "精策",
 	kyoko_shelie: "涉猎",
 	kyoko_zhiheng: "制衡",
