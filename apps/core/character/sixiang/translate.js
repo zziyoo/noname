@@ -1,3 +1,5 @@
+import { get } from "noname";
+
 const translates = {
 	sixiang: "四象封印",
 	std_sunhao: "标孙皓",
