@@ -496,7 +496,7 @@ const translates = {
 	dcfanzhuan: "反转",
 	dcfanzhuan_info: "每轮限一次，每个回合开始时，你可以将你的体力值调整为已损失体力值并摸变化值张牌。",
 	dcniyun: "逆运",
-	dcniyun_info: "锁定技，你的攻击范围，使用杀次数均+X（X为你已损失体力值）。",
+	dcniyun_info: "锁定技，你的攻击范围，使用【杀】次数均+X（X为你已损失体力值）。",
 	meituizhishen: "美腿之神",
 	dcshentui: "伸腿",
 	dcshentui_info: "出牌阶段限一次，你可令你的攻击范围+1并视为使用一张【杀】，你使用点数小于攻击范围的【杀】不限次数且不可响应，使用点数大于攻击范围的【杀】不限距离且伤害+1。",
