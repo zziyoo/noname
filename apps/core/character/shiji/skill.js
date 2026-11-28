@@ -1793,21 +1793,23 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseAfter" },
 		filter(event, player) {
-			return game.hasPlayer(target => {
-				if (target === player || target.countCards("h") + player.countCards("h") === 0) {
-					return false;
-				}
-				return true;
-			});
+			return game.hasPlayer(target => lib.skill.zhimeng.filterTarget(null, player, target));
+		},
+		filterTarget(card, player, target) {
+			const num = player.countCards("h"),
+				targetNum = target.countCards("h");
+			if (target === player || num + targetNum === 0) {
+				return false;
+			}
+			const mode = get.mode();
+			if (mode === "doudizhu" || (mode === "versus" && _status.mode === "two")) {
+				return targetNum <= num + 1;
+			}
+			return true;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "与一名其他角色平分手牌", (card, player, target) => {
-					if (target === player || target.countCards("h") + player.countCards("h") === 0) {
-						return false;
-					}
-					return true;
-				})
+				.chooseTarget(get.prompt(event.skill), lib.translate[`${event.skill}_info`], lib.skill.zhimeng.filterTarget)
 				.set("ai", target => {
 					const player = get.player();
 					const pvalue = -player
